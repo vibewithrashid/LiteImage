@@ -1,0 +1,5 @@
+{
+  "name": "LiteImage Local",
+  "description": "A client-side image utility to compress images to WebP and resize image dimensions locally without server uploads.",
+  "requestFramePermissions": []
+}
