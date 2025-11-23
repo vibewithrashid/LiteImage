@@ -32,60 +32,31 @@ export interface ProcessedImageResult {
   fileName: string;
 }
 
-/**
- * Compresses an image and converts it to WebP.
- */
-export const compressToWebP = async (file: File, quality = 0.75): Promise<ProcessedImageResult> => {
-  const img = await loadImage(file);
-  const canvas = document.createElement('canvas');
-  canvas.width = img.width;
-  canvas.height = img.height;
-  const ctx = canvas.getContext('2d');
-  
-  if (!ctx) throw new Error('Could not get canvas context');
-  
-  ctx.drawImage(img, 0, 0);
-  
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          resolve({
-            blob,
-            width: img.width,
-            height: img.height,
-            // Change extension to .webp
-            fileName: file.name.replace(/\.[^/.]+$/, "") + ".webp" 
-          });
-        } else {
-          reject(new Error('Canvas to Blob failed'));
-        }
-      },
-      'image/webp',
-      quality
-    );
-  });
-};
-
-export interface ResizeOptions {
-  targetWidth?: number | null;
-  targetHeight?: number | null;
-  scale?: number | null; // 0.0 to 1.0
+export interface ProcessOptions {
+  resizeMode: 'none' | 'dimensions' | 'percentage';
+  scale?: number; // 0.0 to 1.0
+  targetWidth?: number;
+  targetHeight?: number;
   maintainAspectRatio?: boolean;
+  quality: number; // 0.0 to 1.0
+  format: 'image/webp' | 'image/jpeg' | 'image/png';
 }
 
 /**
- * Resizes an image based on dimensions or scale.
+ * Processes an image: resizes and compresses/converts format.
  */
-export const resizeImage = async (
+export const processImage = async (
   file: File, 
-  options: ResizeOptions
+  options: ProcessOptions
 ): Promise<ProcessedImageResult> => {
   const { 
+    resizeMode,
+    scale,
     targetWidth, 
     targetHeight, 
-    scale, 
-    maintainAspectRatio = true 
+    maintainAspectRatio = true,
+    quality,
+    format
   } = options;
 
   const img = await loadImage(file);
@@ -93,12 +64,11 @@ export const resizeImage = async (
   let finalWidth = img.width;
   let finalHeight = img.height;
 
-  if (scale) {
-    // Percentage based resizing
+  // Calculate new dimensions
+  if (resizeMode === 'percentage' && scale) {
     finalWidth = Math.round(img.width * scale);
     finalHeight = Math.round(img.height * scale);
-  } else {
-    // Dimension based resizing
+  } else if (resizeMode === 'dimensions') {
     if (maintainAspectRatio) {
       const ratio = img.width / img.height;
       if (targetWidth && !targetHeight) {
@@ -126,15 +96,23 @@ export const resizeImage = async (
 
   if (!ctx) throw new Error('Could not get canvas context');
   
-  // Better quality scaling
+  // High quality scaling
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  return new Promise((resolve, reject) => {
-    let mimeType = file.type;
-    if (mimeType === 'image/svg+xml') mimeType = 'image/png'; 
+  // Determine file extension
+  let extension = '';
+  switch (format) {
+    case 'image/webp': extension = '.webp'; break;
+    case 'image/jpeg': extension = '.jpg'; break;
+    case 'image/png': extension = '.png'; break;
+    default: extension = '.webp';
+  }
 
+  const newFileName = file.name.replace(/\.[^/.]+$/, "") + extension;
+
+  return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -142,14 +120,14 @@ export const resizeImage = async (
             blob,
             width: canvas.width,
             height: canvas.height,
-            fileName: file.name 
+            fileName: newFileName 
           });
         } else {
           reject(new Error('Canvas to Blob failed'));
         }
       },
-      mimeType,
-      0.90 
+      format,
+      quality
     );
   });
 };
@@ -172,3 +150,50 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
  * Helper to delay execution
  */
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Compresses an image to WebP format.
+ */
+export const compressToWebP = async (file: File, quality: number): Promise<ProcessedImageResult> => {
+  return processImage(file, {
+    resizeMode: 'none',
+    quality: quality,
+    format: 'image/webp'
+  });
+};
+
+export interface SimpleResizeOptions {
+  scale?: number;
+  targetWidth?: number | null;
+  targetHeight?: number | null;
+  maintainAspectRatio?: boolean;
+}
+
+/**
+ * Resizes an image.
+ */
+export const resizeImage = async (file: File, options: SimpleResizeOptions): Promise<ProcessedImageResult> => {
+  const { scale, targetWidth, targetHeight, maintainAspectRatio = true } = options;
+
+  let resizeMode: 'none' | 'dimensions' | 'percentage' = 'none';
+  if (scale) {
+    resizeMode = 'percentage';
+  } else if (targetWidth || targetHeight) {
+    resizeMode = 'dimensions';
+  }
+
+  // Determine output format based on input, or default to JPEG
+  let format: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg';
+  if (file.type === 'image/png') format = 'image/png';
+  if (file.type === 'image/webp') format = 'image/webp';
+
+  return processImage(file, {
+    resizeMode,
+    scale,
+    targetWidth: targetWidth || undefined,
+    targetHeight: targetHeight || undefined,
+    maintainAspectRatio,
+    quality: 0.9,
+    format
+  });
+};

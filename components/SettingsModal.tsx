@@ -30,8 +30,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={handleOverlayClick}
     >
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 sticky top-0 z-10">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Settings</h3>
           <button 
             onClick={onClose}
@@ -42,7 +42,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Auto Download Section */}
+          {/* General */}
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-slate-900 dark:text-slate-200 uppercase tracking-wider">General</h4>
             <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 cursor-pointer hover:border-primary-300 dark:hover:border-slate-600 transition-colors">
@@ -59,58 +59,73 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </label>
           </div>
 
-          {/* Compressor Defaults */}
+          {/* Defaults */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-slate-900 dark:text-slate-200 uppercase tracking-wider">Compressor Default</h4>
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Quality</label>
-                <span className="text-sm font-semibold text-primary-600 dark:text-primary-400">{settings.defaultQuality}%</span>
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="100"
-                value={settings.defaultQuality}
-                onChange={(e) => updateSetting('defaultQuality', parseInt(e.target.value))}
-                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary-600 dark:accent-primary-500"
-              />
-            </div>
-          </div>
-
-          {/* Resizer Defaults */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-slate-900 dark:text-slate-200 uppercase tracking-wider">Resizer Default</h4>
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
+            <h4 className="text-sm font-medium text-slate-900 dark:text-slate-200 uppercase tracking-wider">Default Configuration</h4>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-5">
+              
+              {/* Output Format Default */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Default Mode</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => updateSetting('defaultResizeMode', 'percentage')}
-                    className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${
-                      settings.defaultResizeMode === 'percentage'
-                        ? 'bg-white dark:bg-slate-700 border-primary-500 text-primary-600 dark:text-primary-400 shadow-sm'
-                        : 'bg-transparent border-transparent text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    Percentage
-                  </button>
-                  <button
-                    onClick={() => updateSetting('defaultResizeMode', 'dimensions')}
-                    className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${
-                      settings.defaultResizeMode === 'dimensions'
-                        ? 'bg-white dark:bg-slate-700 border-primary-500 text-primary-600 dark:text-primary-400 shadow-sm'
-                        : 'bg-transparent border-transparent text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    Dimensions
-                  </button>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Default Format</label>
+                <div className="flex space-x-2">
+                  {(['image/webp', 'image/jpeg', 'image/png'] as const).map(fmt => (
+                     <button
+                        key={fmt}
+                        onClick={() => updateSetting('defaultOutputFormat', fmt)}
+                        className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          settings.defaultOutputFormat === fmt
+                            ? 'bg-white dark:bg-slate-700 border-primary-500 text-primary-600 dark:text-primary-400 shadow-sm'
+                            : 'bg-transparent border-transparent text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {fmt.split('/')[1].toUpperCase()}
+                      </button>
+                  ))}
+                </div>
+              </div>
+
+               {/* Quality Default */}
+               <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Default Quality</label>
+                  <span className="text-sm font-semibold text-primary-600 dark:text-primary-400">{settings.defaultQuality}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={settings.defaultQuality}
+                  onChange={(e) => updateSetting('defaultQuality', parseInt(e.target.value))}
+                  className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary-600 dark:accent-primary-500"
+                />
+              </div>
+
+              <hr className="border-slate-200 dark:border-slate-700" />
+
+              {/* Resize Mode Default */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Default Resize Mode</label>
+                <div className="flex space-x-2">
+                  {(['none', 'percentage', 'dimensions'] as const).map((mode) => (
+                     <button
+                        key={mode}
+                        onClick={() => updateSetting('defaultResizeMode', mode)}
+                        className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          settings.defaultResizeMode === mode
+                            ? 'bg-white dark:bg-slate-700 border-primary-500 text-primary-600 dark:text-primary-400 shadow-sm'
+                            : 'bg-transparent border-transparent text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {mode === 'none' ? 'None' : mode === 'percentage' ? 'Percentage' : 'Fixed'}
+                      </button>
+                  ))}
                 </div>
               </div>
               
+              {/* Resize Percentage Default */}
               <div>
                  <div className="flex justify-between mb-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Default Scale</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Default Resize %</label>
                   <span className="text-sm font-semibold text-primary-600 dark:text-primary-400">{settings.defaultResizePercentage}%</span>
                 </div>
                 <input

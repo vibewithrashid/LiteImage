@@ -1,13 +1,15 @@
 export interface AppSettings {
   autoDownload: boolean;
   defaultQuality: number;
+  defaultResizeMode: 'none' | 'dimensions' | 'percentage';
   defaultResizePercentage: number;
-  defaultResizeMode: 'dimensions' | 'percentage';
+  defaultOutputFormat: 'image/webp' | 'image/jpeg' | 'image/png';
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  autoDownload: false,
-  defaultQuality: 75,
+  autoDownload: true,
+  defaultQuality: 70,
+  defaultResizeMode: 'none',
   defaultResizePercentage: 50,
-  defaultResizeMode: 'percentage'
+  defaultOutputFormat: 'image/webp'
 };

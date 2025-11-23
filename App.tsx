@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, Image as ImageIcon, Moon, Sun, Settings } from 'lucide-react';
-import Compressor from './views/Compressor';
-import Resizer from './views/Resizer';
+import { Layers, Moon, Sun, Settings } from 'lucide-react';
+import Dashboard from './views/Dashboard';
 import SettingsModal from './components/SettingsModal';
 import { AppSettings, DEFAULT_SETTINGS } from './types';
 
-type Tab = 'compress' | 'resize';
 type Theme = 'light' | 'dark';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('compress');
   const [theme, setTheme] = useState<Theme>('dark');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -36,7 +33,7 @@ const App: React.FC = () => {
       />
 
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 transition-colors duration-200">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 transition-colors duration-200 mb-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white shadow-sm">
@@ -68,45 +65,14 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-center mb-10">
-          <div className="bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm inline-flex transition-colors duration-200">
-            <button
-              onClick={() => setActiveTab('compress')}
-              className={`
-                flex items-center px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                ${activeTab === 'compress' 
-                  ? 'bg-primary-50 dark:bg-slate-700 text-primary-700 dark:text-primary-300 shadow-sm ring-1 ring-primary-200 dark:ring-slate-600' 
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'}
-              `}
-            >
-              <Layers className="w-4 h-4 mr-2" />
-              Compress & WebP
-            </button>
-            <button
-              onClick={() => setActiveTab('resize')}
-              className={`
-                flex items-center px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ml-2
-                ${activeTab === 'resize' 
-                  ? 'bg-primary-50 dark:bg-slate-700 text-primary-700 dark:text-primary-300 shadow-sm ring-1 ring-primary-200 dark:ring-slate-600' 
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'}
-              `}
-            >
-              <ImageIcon className="w-4 h-4 mr-2" />
-              Resize Dimensions
-            </button>
-          </div>
+      {/* Main Content Area */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Image Processor</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Resize dimensions and compress images in one go.</p>
         </div>
-
-        {/* Content Area */}
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {activeTab === 'compress' ? (
-            <Compressor settings={settings} />
-          ) : (
-            <Resizer settings={settings} />
-          )}
-        </div>
+        
+        <Dashboard settings={settings} />
       </div>
       
       {/* Footer */}
